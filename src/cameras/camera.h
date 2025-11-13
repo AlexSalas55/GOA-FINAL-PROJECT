@@ -27,6 +27,9 @@ public:
     const Film &film;
     // Aspect (based on the film size)
     double aspect;
+
+
+
 };
 
 #endif // CAMERA_H

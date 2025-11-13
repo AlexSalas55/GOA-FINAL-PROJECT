@@ -23,6 +23,8 @@
 #include "shaders/areadirect.h"
 #include "shaders/purepathtracer.h"
 #include "shaders/nee.h"
+#include "shaders/areadirect-DOF.h"
+#include "shaders/neeDOF.h"
 
 
 #include "materials/phong.h"
@@ -360,6 +362,9 @@ int main()
     Shader *neeshader = new NEE(bgColor, 4); // maxDepth = 4 bounces
 
   
+    Shader* DOFshader = new AreaDirectDOF(bgColor, 10, 10.0f, 0.3f);
+	Shader* DOFNEEshader = new NEEDOF(bgColor, 4, 12.0f, 0.6f);
+
 
     // Build the scene---------------------------------------------------------
     // 
@@ -381,15 +386,15 @@ int main()
 	//raytrace(cam, normalshader, film, myScene.objectsList, myScene.LightSourceList);
     //raytrace(cam, whittedshader, film, myScene.objectsList, myScene.LightSourceList);
     //raytrace(cam, hemisphericaldirectshader, film, myScene.objectsList, myScene.LightSourceList);
-    //raytrace(cam, areadirectshader, film, myScene.objectsList, myScene.LightSourceList);
+    //raytrace(cam, DOFshader, film, myScene.objectsList, myScene.LightSourceList);
     
     // Lab 2 - Task 4.3.1: Pure Path Tracer with multiple samples per pixel
-    //int spp = 256; // samples per pixel
+    int spp = 300; // samples per pixel
     //raytracePathTracer(cam, purepathtracer, film, myScene.objectsList, myScene.LightSourceList, spp);
     
     // Lab 2 - Task 4.3.2: NEE with multiple samples per pixel
-    int spp = 256; // samples per pixel
-    raytracePathTracer(cam, neeshader, film, myScene.objectsList, myScene.LightSourceList, spp);
+    //int spp = 256; // samples per pixel
+    raytracePathTracer(cam, DOFNEEshader, film, myScene.objectsList, myScene.LightSourceList, spp);
     
     auto stop = high_resolution_clock::now();
 
