@@ -119,70 +119,168 @@ void buildSceneCornellBox(Camera*& cam, Film*& film,
 
 }
 
-void buildSceneCornellBox2(Camera*& cam, Film*& film,
-    Scene myScene)
+//void buildSceneCornellBox2(Camera*& cam, Film*& film,
+//    Scene myScene)
+//{
+//    /* **************************** */
+///* Declare and place the camera */
+///* **************************** */
+//    Matrix4x4 cameraToWorld = Matrix4x4::translate(Vector3D(0, 0, -3));
+//    double fovDegrees = 60;
+//    double fovRadians = Utils::degreesToRadians(fovDegrees);
+//    cam = new PerspectiveCamera(cameraToWorld, fovRadians, *film);
+//
+//    /* ********* */
+//    /* Materials */
+//    /* ********* */
+//    Material* redDiffuse = new Phong(Vector3D(0.7, 0.2, 0.3), Vector3D(0, 0, 0), 100);
+//    Material* greenDiffuse = new Phong(Vector3D(0.2, 0.7, 0.3), Vector3D(0, 0, 0), 100);
+//    Material* greyDiffuse = new Phong(Vector3D(0.8, 0.8, 0.8), Vector3D(0, 0, 0), 100);
+//    Material* blueGlossy_20 = new Phong(Vector3D(0.2, 0.3, 0.8), Vector3D(0.2, 0.2, 0.2), 20);
+//    Material* blueGlossy_80 = new Phong(Vector3D(0.2, 0.3, 0.8), Vector3D(0.2, 0.2, 0.2), 80);
+//    Material* cyandiffuse = new Phong(Vector3D(0.2, 0.8, 0.8), Vector3D(0, 0, 0), 100);
+//    Material* emissive = new Emissive(Vector3D(25, 25, 25), Vector3D(0.5));
+//    Material* pinkGlossy = new Phong(Vector3D(1.0, 0.2, 0.7), Vector3D(0.2, 0.2, 0.2), 20);
+//
+//
+//    Material* mirror = new Mirror();
+//    Material* transmissive = new Transmissive(0.7);
+//
+//    /* ******* */
+//    /* Objects */
+//    /* ******* */
+//    double offset = 3.0;
+//    Matrix4x4 idTransform;
+//    // Construct the Cornell Box
+//    Shape* leftPlan = new InfinitePlan(Vector3D(-offset - 1, 0, 0), Vector3D(1, 0, 0), redDiffuse);
+//    Shape* rightPlan = new InfinitePlan(Vector3D(offset + 1, 0, 0), Vector3D(-1, 0, 0), greenDiffuse);
+//    Shape* topPlan = new InfinitePlan(Vector3D(0, offset, 0), Vector3D(0, -1, 0), greyDiffuse);
+//    Shape* bottomPlan = new InfinitePlan(Vector3D(0, -offset, 0), Vector3D(0, 1, 0), greyDiffuse);
+//    Shape* backPlan = new InfinitePlan(Vector3D(0, 0, 3 * offset), Vector3D(0, 0, -1), greyDiffuse);
+//    Shape* square_emissive = new Square(Vector3D(-1.0, 3.0, 3.0), Vector3D(2.0, 0.0, 0.0), Vector3D(0.0, 0.0, 2.0), Vector3D(0.0, -1.0, 0.0), emissive);
+//
+//
+//    myScene.AddObject(leftPlan);
+//    myScene.AddObject(rightPlan);
+//    myScene.AddObject(topPlan);
+//    myScene.AddObject(bottomPlan);
+//    myScene.AddObject(backPlan);
+//    myScene.AddObject(square_emissive);
+//
+//
+//    // Place the Spheres inside the Cornell Box
+//    double radius = 1;
+//    Matrix4x4 sphereTransform1;
+//    sphereTransform1 = Matrix4x4::translate(Vector3D(1.5, -offset + radius, 6));
+//    Shape* s1 = new Sphere(radius, sphereTransform1, pinkGlossy);
+//
+//    Matrix4x4 sphereTransform2;
+//    sphereTransform2 = Matrix4x4::translate(Vector3D(-1.5, -offset + 3 * radius, 4));
+//    Shape* s2 = new Sphere(radius, sphereTransform2, pinkGlossy);
+//
+//    Shape* square = new Square(Vector3D(offset + 0.999, -offset - 0.2, 3.0), Vector3D(0.0, 4.0, 0.0), Vector3D(0.0, 0.0, 2.0), Vector3D(-1.0, 0.0, 0.0), cyandiffuse);
+//
+//    myScene.AddObject(s1);
+//    myScene.AddObject(s2);
+//    myScene.AddObject(square);
+//}
+
+void buildSceneCornellBox2(Camera*& cam, Film*& film, Scene myScene)
 {
     /* **************************** */
-/* Declare and place the camera */
-/* **************************** */
-    Matrix4x4 cameraToWorld = Matrix4x4::translate(Vector3D(0, 0, -3));
+    /* Cámara */
+    /* **************************** */
+    Matrix4x4 cameraToWorld = Matrix4x4::translate(Vector3D(0.0, -0.25, -3.0));
     double fovDegrees = 60;
     double fovRadians = Utils::degreesToRadians(fovDegrees);
     cam = new PerspectiveCamera(cameraToWorld, fovRadians, *film);
 
     /* ********* */
-    /* Materials */
+    /* Materiales */
     /* ********* */
-    Material* redDiffuse = new Phong(Vector3D(0.7, 0.2, 0.3), Vector3D(0, 0, 0), 100);
-    Material* greenDiffuse = new Phong(Vector3D(0.2, 0.7, 0.3), Vector3D(0, 0, 0), 100);
-    Material* greyDiffuse = new Phong(Vector3D(0.8, 0.8, 0.8), Vector3D(0, 0, 0), 100);
-    Material* blueGlossy_20 = new Phong(Vector3D(0.2, 0.3, 0.8), Vector3D(0.2, 0.2, 0.2), 20);
-    Material* blueGlossy_80 = new Phong(Vector3D(0.2, 0.3, 0.8), Vector3D(0.2, 0.2, 0.2), 80);
-    Material* cyandiffuse = new Phong(Vector3D(0.2, 0.8, 0.8), Vector3D(0, 0, 0), 100);
-    Material* emissive = new Emissive(Vector3D(25, 25, 25), Vector3D(0.5));
-    Material* pinkGlossy = new Phong(Vector3D(1.0, 0.2, 0.7), Vector3D(0.2, 0.2, 0.2), 20);
+    Material* glossyWhite  = new Phong(Vector3D(0.85, 0.85, 0.85), Vector3D(0.9, 0.9, 0.9), 80);
+    Material* glossyRed    = new Phong(Vector3D(0.95, 0.10, 0.10), Vector3D(0.9, 0.9, 0.9), 80);
+    Material* glossyBlue   = new Phong(Vector3D(0.10, 0.20, 0.95), Vector3D(0.9, 0.9, 0.9), 80);
+    Material* glossyGreen  = new Phong(Vector3D(0.10, 0.90, 0.20), Vector3D(0.9, 0.9, 0.9), 80);
+    Material* glossyPurple = new Phong(Vector3D(0.60, 0.20, 0.80), Vector3D(0.9, 0.9, 0.9), 80);
+    Material* glossyYellow = new Phong(Vector3D(0.95, 0.85, 0.10), Vector3D(0.9, 0.9, 0.9), 80);
 
-
-    Material* mirror = new Mirror();
-    Material* transmissive = new Transmissive(0.7);
+    // Suelo gris con algo de brillo
+    Material* floorGlossy  = new Phong(Vector3D(0.15, 0.15, 0.15), Vector3D(0.6, 0.6, 0.6), 60);
+    // Luz de área en el techo
+    Material* emissive     = new Emissive(Vector3D(35, 35, 35), Vector3D(0.0));
 
     /* ******* */
-    /* Objects */
+    /* Objetos */
     /* ******* */
     double offset = 3.0;
-    Matrix4x4 idTransform;
-    // Construct the Cornell Box
-    Shape* leftPlan = new InfinitePlan(Vector3D(-offset - 1, 0, 0), Vector3D(1, 0, 0), redDiffuse);
-    Shape* rightPlan = new InfinitePlan(Vector3D(offset + 1, 0, 0), Vector3D(-1, 0, 0), greenDiffuse);
-    Shape* topPlan = new InfinitePlan(Vector3D(0, offset, 0), Vector3D(0, -1, 0), greyDiffuse);
-    Shape* bottomPlan = new InfinitePlan(Vector3D(0, -offset, 0), Vector3D(0, 1, 0), greyDiffuse);
-    Shape* backPlan = new InfinitePlan(Vector3D(0, 0, 3 * offset), Vector3D(0, 0, -1), greyDiffuse);
-    Shape* square_emissive = new Square(Vector3D(-1.0, 3.0, 3.0), Vector3D(2.0, 0.0, 0.0), Vector3D(0.0, 0.0, 2.0), Vector3D(0.0, -1.0, 0.0), emissive);
 
-
-    myScene.AddObject(leftPlan);
-    myScene.AddObject(rightPlan);
-    myScene.AddObject(topPlan);
+    // Solo plano suelo (fondo negro)
+    Shape* bottomPlan = new InfinitePlan(Vector3D(0, -offset, 0), Vector3D(0, 1, 0), floorGlossy);
     myScene.AddObject(bottomPlan);
-    myScene.AddObject(backPlan);
+
+    // Luz de área: rectángulo grande en el techo, mirando hacia abajo
+    double lightY = 8; // altura mayor
+    Shape* square_emissive = new Square(
+        Vector3D(-3.0, lightY, 7),   // esquina (sube en Y)
+        Vector3D(6.0, 0.0, 0.0),       // lado X
+        Vector3D(0.0, 0.0, 6.0),       // lado Z
+        Vector3D(0.0, -1.0, 0.0),      // normal hacia abajo
+        emissive);
     myScene.AddObject(square_emissive);
 
+    // Definición de bolas (x,z). Se ajustarán para evitar solapes.
+    struct Ball { double r; Vector3D p; Material* m; };
+    std::vector<Ball> balls = {
+        {1.6, Vector3D(-2.20, 0.0, 5.00), glossyBlue},    // azul grande izq
+        {2.2, Vector3D(-0.20, 0.0, 8.40), glossyPurple},  // morada grande fondo izq
+        {0.9, Vector3D(-1.60, 0.0, 5.60), glossyRed},     // roja pequeña
+        {1.2, Vector3D( 8.00, 0.0, 6.80), glossyGreen},   // verde dcha
+        {1.4, Vector3D( 1.20, 0.0, 7.30), glossyBlue},    // azul media fondo
+        {1.0, Vector3D( 2.60, 0.0, 5.40), glossyPurple},  // morada media delantera
+        {1.0, Vector3D( 1.50, 0.0, 6.30), glossyWhite},   // blanca central (punto de foco)
+        {3.2, Vector3D( 4.20, 0.0, 9.00), glossyRed},     // roja enorme fondo dcha
+        {0.4, Vector3D( 3.40, 0.0, 6.20), glossyYellow},  // amarilla pequeña
+    };
 
-    // Place the Spheres inside the Cornell Box
-    double radius = 1;
-    Matrix4x4 sphereTransform1;
-    sphereTransform1 = Matrix4x4::translate(Vector3D(1.5, -offset + radius, 6));
-    Shape* s1 = new Sphere(radius, sphereTransform1, pinkGlossy);
+    // Relajación en planta (x,z) para evitar solapes.
+    // Para esferas sobre el mismo plano, distancia horizontal mínima = 2*sqrt(r1*r2).
+    const double margin = 0.02; // separador mínimo
+    for (int iter = 0; iter < 200; ++iter) {
+        bool moved = false;
+        for (size_t i = 0; i < balls.size(); ++i) {
+            for (size_t j = i + 1; j < balls.size(); ++j) {
+                const double minH = 2.0 * std::sqrt(balls[i].r * balls[j].r) + margin;
+                const double dx = balls[j].p.x - balls[i].p.x;
+                const double dz = balls[j].p.z - balls[i].p.z;
+                const double dist = std::sqrt(dx * dx + dz * dz);
+                if (dist < minH) {
+                    // Empuje proporcional. Las grandes se mueven menos (peso ~ 1/r).
+                    const double push = 0.5 * (minH - dist);
+                    const double nx = (dist > 1e-8) ? dx / dist : 1.0;
+                    const double nz = (dist > 1e-8) ? dz / dist : 0.0;
+                    const double wi = 1.0 / balls[i].r;
+                    const double wj = 1.0 / balls[j].r;
+                    const double wsum = wi + wj;
 
-    Matrix4x4 sphereTransform2;
-    sphereTransform2 = Matrix4x4::translate(Vector3D(-1.5, -offset + 3 * radius, 4));
-    Shape* s2 = new Sphere(radius, sphereTransform2, pinkGlossy);
+                    balls[i].p.x -= nx * push * (wi / wsum);
+                    balls[i].p.z -= nz * push * (wi / wsum);
+                    balls[j].p.x += nx * push * (wj / wsum);
+                    balls[j].p.z += nz * push * (wj / wsum);
 
-    Shape* square = new Square(Vector3D(offset + 0.999, -offset - 0.2, 3.0), Vector3D(0.0, 4.0, 0.0), Vector3D(0.0, 0.0, 2.0), Vector3D(-1.0, 0.0, 0.0), cyandiffuse);
+                    moved = true;
+                }
+            }
+        }
+        if (!moved) break;
+    }
 
-    myScene.AddObject(s1);
-    myScene.AddObject(s2);
-    myScene.AddObject(square);
+    // Crear geometría en la escena (centros apoyados en el suelo).
+    for (const auto& b : balls) {
+        Matrix4x4 t = Matrix4x4::translate(Vector3D(b.p.x, -offset + b.r, b.p.z));
+        Shape* s = new Sphere(b.r, t, b.m);
+        myScene.AddObject(s);
+    }
 }
 
 
@@ -363,7 +461,7 @@ int main()
 
   
     Shader* DOFshader = new AreaDirectDOF(bgColor, 10, 10.0f, 0.3f);
-	Shader* DOFNEEshader = new NEEDOF(bgColor, 4, 12.0f, 0.6f);
+	Shader* DOFNEEshader = new NEEDOF(bgColor, 4, 0.7f, Vector3D(1.20, 0.0, 7.30));
 
 
     // Build the scene---------------------------------------------------------
@@ -389,7 +487,7 @@ int main()
     //raytrace(cam, DOFshader, film, myScene.objectsList, myScene.LightSourceList);
     
     // Lab 2 - Task 4.3.1: Pure Path Tracer with multiple samples per pixel
-    int spp = 300; // samples per pixel
+    int spp = 150; // samples per pixel
     //raytracePathTracer(cam, purepathtracer, film, myScene.objectsList, myScene.LightSourceList, spp);
     
     // Lab 2 - Task 4.3.2: NEE with multiple samples per pixel

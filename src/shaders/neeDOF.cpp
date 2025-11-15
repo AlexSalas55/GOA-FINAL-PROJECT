@@ -4,19 +4,21 @@
 #include <algorithm>
 
 #define PI 3.14159265358979323846
-#define NumRandomPosition 30 // Muestras para DOF (el artículo recomienda 20-30)
+#define NumRandomPosition 10 // Muestras para DOF (el artículo recomienda 20-30)
 
 NEEDOF::NEEDOF()
-    : Shader(), maxDepth(4)
+    : Shader(), maxDepth(4), focalLength(0.0f), sensorWidth(0.0f), hasFocusPoint(false), focusPointWS(0.0, 0.0, 0.0)
 { }
 
 NEEDOF::NEEDOF(Vector3D bgColor_, int maxDepth_, float focalLength, float sensorWidth)
-    : Shader(bgColor_), maxDepth(maxDepth_)
-{ 
+    : Shader(bgColor_), maxDepth(maxDepth_), focalLength(focalLength), sensorWidth(sensorWidth),
+      hasFocusPoint(false), focusPointWS(0.0, 0.0, 0.0)
+{ }
 
-    this->focalLength = focalLength;
-	this->sensorWidth = sensorWidth;    
-}
+NEEDOF::NEEDOF(Vector3D bgColor_, int maxDepth_, float sensorWidth, const Vector3D& focusPointWS)
+    : Shader(bgColor_), maxDepth(maxDepth_), focalLength(0.0f), sensorWidth(sensorWidth),
+      hasFocusPoint(true), focusPointWS(focusPointWS)
+{ }
 
 Vector3D NEEDOF::computeColor(const Ray& r,
     const std::vector<Shape*>& objList,
@@ -27,15 +29,19 @@ Vector3D NEEDOF::computeColor(const Ray& r,
     {
         Vector3D color(0.0);
 
-        // Calcular el punto focal a lo largo del rayo
-        // Según el artículo: focalPoint = rayOrigin + rayDirection * focalLength
-        Vector3D focalPoint = r.o + r.d * this->focalLength;
+        // Calcular focalLength por rayo si hay punto de enfoque; si no, usar el fijo
+        float focalLenForRay = this->focalLength;
+        if (hasFocusPoint) {
+            focalLenForRay = (focusPointWS - r.o).length();
+        }
+
+        // Punto focal a lo largo del rayo
+        Vector3D focalPoint = r.o + r.d * focalLenForRay;
 
         // Muestrear múltiples posiciones en el disco de apertura
         for (int i = 0; i < NumRandomPosition; i++)
         {
             // Método de rechazo para distribución uniforme en disco
-            // (como se explica en el artículo)
             double offsetX, offsetY;
             do {
                 offsetX = 2.0 * ((double)rand() / RAND_MAX) - 1.0;
@@ -47,7 +53,6 @@ Vector3D NEEDOF::computeColor(const Ray& r,
             offsetY *= this->sensorWidth;
 
             // Construir sistema de coordenadas local perpendicular al rayo
-            // Según el artículo: necesitamos vectores perpendiculares a la dirección del rayo
             Vector3D up(0, 1, 0);
             if (std::abs(r.d.y) > 0.99) {
                 up = Vector3D(1, 0, 0);  // Evitar colinealidad
@@ -68,11 +73,9 @@ Vector3D NEEDOF::computeColor(const Ray& r,
             ).normalized();
 
             // Nueva posición en el plano de apertura
-            // Según el artículo: desplazar el origen del rayo en el plano de la lente
             Vector3D randomPosition = r.o + right * offsetX + trueUp * offsetY;
 
             // Nueva dirección: desde la posición aleatoria hacia el punto focal
-            // Esto es clave según el artículo: todos los rayos convergen en el punto focal
             Vector3D newDirection = (focalPoint - randomPosition).normalized();
 
             // Crear rayo modificado con depth=1 para evitar re-aplicar DOF
@@ -88,14 +91,6 @@ Vector3D NEEDOF::computeColor(const Ray& r,
         // Para rayos secundarios (reflexiones, refracciones), NO aplicar DOF
         return computeRadiance(r, objList, lsList);
     }
-
-
-
-
-
-
-
-
 
     return computeRadiance(r, objList, lsList);
 }

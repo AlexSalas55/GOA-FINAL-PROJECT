@@ -8,12 +8,17 @@ class NEEDOF : public Shader
 {
 public:
     NEEDOF();
+
+    // Enfoque manual (foco fijo)
     NEEDOF(Vector3D bgColor_, int maxDepth_, float focalLength, float sensorWidth);
+
+    // Enfoque por coordenadas (no requiere focalLength)
+    // focusPointWS: punto de enfoque en espacio de mundo
+    NEEDOF(Vector3D bgColor_, int maxDepth_, float sensorWidth, const Vector3D& focusPointWS);
 
     Vector3D computeColor(const Ray& r,
         const std::vector<Shape*>& objList,
         const std::vector<LightSource*>& lsList) const;
-
 
 private:
     int maxDepth;
@@ -38,9 +43,14 @@ private:
         const std::vector<Shape*>& objList,
         const std::vector<LightSource*>& lsList) const;
 
-    float focalLength;
-    float sensorWidth;
+    // Si no hay punto de enfoque, se usa este foco fijo
+    float focalLength = 0.0f;
+    // Radio de apertura (controla la intensidad del desenfoque)
+    float sensorWidth = 0.0f;
 
+    // Enfoque por coordenadas (opcional)
+    bool hasFocusPoint = false;
+    Vector3D focusPointWS = Vector3D(0.0, 0.0, 0.0);
 };
 
 #endif // NEE_H
