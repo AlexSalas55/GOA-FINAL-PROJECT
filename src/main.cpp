@@ -25,6 +25,7 @@
 #include "shaders/nee.h"
 #include "shaders/areadirect-DOF.h"
 #include "shaders/neeDOF.h"
+#include "shaders/areadirectMB.h"
 
 
 #include "materials/phong.h"
@@ -188,7 +189,7 @@ void buildSceneCornellBox(Camera*& cam, Film*& film,
 void buildSceneCornellBox2(Camera*& cam, Film*& film, Scene myScene)
 {
     /* **************************** */
-    /* Cámara */
+    /* Cï¿½mara */
     /* **************************** */
     Matrix4x4 cameraToWorld = Matrix4x4::translate(Vector3D(0.0, -0.25, -3.0));
     double fovDegrees = 60;
@@ -207,7 +208,7 @@ void buildSceneCornellBox2(Camera*& cam, Film*& film, Scene myScene)
 
     // Suelo gris con algo de brillo
     Material* floorGlossy  = new Phong(Vector3D(0.15, 0.15, 0.15), Vector3D(0.6, 0.6, 0.6), 60);
-    // Luz de área en el techo
+    // Luz de ï¿½rea en el techo
     Material* emissive     = new Emissive(Vector3D(35, 35, 35), Vector3D(0.0));
 
     /* ******* */
@@ -219,7 +220,7 @@ void buildSceneCornellBox2(Camera*& cam, Film*& film, Scene myScene)
     Shape* bottomPlan = new InfinitePlan(Vector3D(0, -offset, 0), Vector3D(0, 1, 0), floorGlossy);
     myScene.AddObject(bottomPlan);
 
-    // Luz de área: rectángulo grande en el techo, mirando hacia abajo
+    // Luz de ï¿½rea: rectï¿½ngulo grande en el techo, mirando hacia abajo
     double lightY = 8; // altura mayor
     Shape* square_emissive = new Square(
         Vector3D(-3.0, lightY, 7),   // esquina (sube en Y)
@@ -229,23 +230,23 @@ void buildSceneCornellBox2(Camera*& cam, Film*& film, Scene myScene)
         emissive);
     myScene.AddObject(square_emissive);
 
-    // Definición de bolas (x,z). Se ajustarán para evitar solapes.
+    // Definiciï¿½n de bolas (x,z). Se ajustarï¿½n para evitar solapes.
     struct Ball { double r; Vector3D p; Material* m; };
     std::vector<Ball> balls = {
         {1.6, Vector3D(-2.20, 0.0, 5.00), glossyBlue},    // azul grande izq
         {2.2, Vector3D(-0.20, 0.0, 8.40), glossyPurple},  // morada grande fondo izq
-        {0.9, Vector3D(-1.60, 0.0, 5.60), glossyRed},     // roja pequeña
+        {0.9, Vector3D(-1.60, 0.0, 5.60), glossyRed},     // roja pequeï¿½a
         {1.2, Vector3D( 8.00, 0.0, 6.80), glossyGreen},   // verde dcha
         {1.4, Vector3D( 1.20, 0.0, 7.30), glossyBlue},    // azul media fondo
         {1.0, Vector3D( 2.60, 0.0, 5.40), glossyPurple},  // morada media delantera
         {1.0, Vector3D( 1.50, 0.0, 6.30), glossyWhite},   // blanca central (punto de foco)
         {3.2, Vector3D( 4.20, 0.0, 9.00), glossyRed},     // roja enorme fondo dcha
-        {0.4, Vector3D( 3.40, 0.0, 6.20), glossyYellow},  // amarilla pequeña
+        {0.4, Vector3D( 3.40, 0.0, 6.20), glossyYellow},  // amarilla pequeï¿½a
     };
 
-    // Relajación en planta (x,z) para evitar solapes.
-    // Para esferas sobre el mismo plano, distancia horizontal mínima = 2*sqrt(r1*r2).
-    const double margin = 0.02; // separador mínimo
+    // Relajaciï¿½n en planta (x,z) para evitar solapes.
+    // Para esferas sobre el mismo plano, distancia horizontal mï¿½nima = 2*sqrt(r1*r2).
+    const double margin = 0.02; // separador mï¿½nimo
     for (int iter = 0; iter < 200; ++iter) {
         bool moved = false;
         for (size_t i = 0; i < balls.size(); ++i) {
@@ -275,11 +276,14 @@ void buildSceneCornellBox2(Camera*& cam, Film*& film, Scene myScene)
         if (!moved) break;
     }
 
-    // Crear geometría en la escena (centros apoyados en el suelo).
+    // Create geometry in the scene (centers resting on floor)
+    int sphereIndex = 0;
     for (const auto& b : balls) {
         Matrix4x4 t = Matrix4x4::translate(Vector3D(b.p.x, -offset + b.r, b.p.z));
         Shape* s = new Sphere(b.r, t, b.m);
         myScene.AddObject(s);
+        
+        sphereIndex++;
     }
 }
 
@@ -451,7 +455,7 @@ int main()
     Shader *hemisphericaldirectshader = new HemisphericalDirect(bgColor, 256); // 256 samples per pixel
     
     //Lab 2 - Task 4.2.2
-    Shader *areadirectshader = new AreaDirect(bgColor, 1024); // 256 samples per pixel
+    Shader *areadirectshader = new AreaDirect(bgColor, 256);
     
     //Lab 2 - Task 4.3.1
     Shader *purepathtracer = new PurePathTracer(bgColor, 5); // maxDepth = 4 bounces
@@ -462,6 +466,11 @@ int main()
   
     Shader* DOFshader = new AreaDirectDOF(bgColor, 10, 10.0f, 0.3f);
 	Shader* DOFNEEshader = new NEEDOF(bgColor, 4, 0.7f, Vector3D(1.20, 0.0, 7.30));
+    
+    // Motion Blur shader: camera moves slightly during shutter time
+    // Velocity defines camera movement (simulate horizontal panning)
+    Vector3D cameraVelocity(0.5, 0.0, 0.0); // Move right during exposure
+    Shader* MBshader = new AreaDirectMB(bgColor, 64, 10, cameraVelocity);
 
 
     // Build the scene---------------------------------------------------------
@@ -484,15 +493,17 @@ int main()
 	//raytrace(cam, normalshader, film, myScene.objectsList, myScene.LightSourceList);
     //raytrace(cam, whittedshader, film, myScene.objectsList, myScene.LightSourceList);
     //raytrace(cam, hemisphericaldirectshader, film, myScene.objectsList, myScene.LightSourceList);
-    //raytrace(cam, DOFshader, film, myScene.objectsList, myScene.LightSourceList);
+    
+    // Motion Blur: camera moves during shutter time, creating blur effect
+    raytrace(cam, MBshader, film, myScene.objectsList, myScene.LightSourceList);
     
     // Lab 2 - Task 4.3.1: Pure Path Tracer with multiple samples per pixel
-    int spp = 150; // samples per pixel
+    //int spp = 150; // samples per pixel
     //raytracePathTracer(cam, purepathtracer, film, myScene.objectsList, myScene.LightSourceList, spp);
     
-    // Lab 2 - Task 4.3.2: NEE with multiple samples per pixel
-    //int spp = 256; // samples per pixel
-    raytracePathTracer(cam, DOFNEEshader, film, myScene.objectsList, myScene.LightSourceList, spp);
+    // Lab 2 - Task 4.3.2: NEE with multiple samples per pixel / DOF
+    //int spp = 150;
+    //raytracePathTracer(cam, DOFNEEshader, film, myScene.objectsList, myScene.LightSourceList, spp);
     
     auto stop = high_resolution_clock::now();
 
