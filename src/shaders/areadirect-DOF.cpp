@@ -5,7 +5,7 @@
 #include <cmath>
 
 #define PI 3.14159265358979323846
-#define NumRandomPosition 20  // Muestras para DOF (el artículo recomienda 20-30)
+#define NumRandomPosition 3  // Muestras para DOF (el artículo recomienda 20-30)
 #define MAX_DEPTH 3  // Límite de profundidad de recursión
 
 AreaDirectDOF::AreaDirectDOF()
@@ -30,7 +30,6 @@ Vector3D AreaDirectDOF::computeColor(const Ray& r,
         Vector3D color(0.0);
 
         // Calcular el punto focal a lo largo del rayo
-        // Según el artículo: focalPoint = rayOrigin + rayDirection * focalLength
         Vector3D focalPoint = r.o + r.d * this->focalLength;
 
         // Muestrear múltiples posiciones en el disco de apertura
