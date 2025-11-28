@@ -26,6 +26,7 @@
 #include "shaders/areadirect-DOF.h"
 #include "shaders/neeDOF.h"
 #include "shaders/areadirectMB.h"
+#include "shaders/neeMB.h"
 
 
 #include "materials/phong.h"
@@ -467,10 +468,10 @@ int main()
     Shader* DOFshader = new AreaDirectDOF(bgColor, 10, 10.0f, 0.3f);
 	Shader* DOFNEEshader = new NEEDOF(bgColor, 4, 0.7f, Vector3D(1.20, 0.0, 7.30));
     
-    // Motion Blur shader: camera moves slightly during shutter time
-    // Velocity defines camera movement (simulate horizontal panning)
-    Vector3D cameraVelocity(0.5, 0.0, 0.0); // Move right during exposure
+    // Motion Blur shaders: camera moves slightly during shutter time
+    Vector3D cameraVelocity(2, 0.0, 0.0); // Camera pans right
     Shader* MBshader = new AreaDirectMB(bgColor, 64, 10, cameraVelocity);
+    Shader* NEEMBshader = new NEEMB(bgColor, 4, 10, cameraVelocity);
 
 
     // Build the scene---------------------------------------------------------
@@ -494,8 +495,8 @@ int main()
     //raytrace(cam, whittedshader, film, myScene.objectsList, myScene.LightSourceList);
     //raytrace(cam, hemisphericaldirectshader, film, myScene.objectsList, myScene.LightSourceList);
     
-    // Motion Blur: camera moves during shutter time, creating blur effect
-    raytrace(cam, MBshader, film, myScene.objectsList, myScene.LightSourceList);
+    // Motion Blur: camera moves during shutter time
+    //raytrace(cam, MBshader, film, myScene.objectsList, myScene.LightSourceList);
     
     // Lab 2 - Task 4.3.1: Pure Path Tracer with multiple samples per pixel
     //int spp = 150; // samples per pixel
@@ -504,6 +505,10 @@ int main()
     // Lab 2 - Task 4.3.2: NEE with multiple samples per pixel / DOF
     //int spp = 150;
     //raytracePathTracer(cam, DOFNEEshader, film, myScene.objectsList, myScene.LightSourceList, spp);
+    
+    // Motion Blur with NEE
+    int spp = 50;
+    raytracePathTracer(cam, NEEMBshader, film, myScene.objectsList, myScene.LightSourceList, spp);
     
     auto stop = high_resolution_clock::now();
 
