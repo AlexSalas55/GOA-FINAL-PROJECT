@@ -254,79 +254,100 @@ void buildSceneDepthOfField(Camera*& cam, Film*& film, Scene myScene)
 void buildMotionBlurScene(Camera*& cam, Film*& film, Scene myScene)
 {
     /* **************************** */
-    /* 1. Camera Setup              */
-    /* **************************** */
-    // Position camera back (-6) and slightly up (1) to see the depth
-    Matrix4x4 cameraToWorld = Matrix4x4::translate(Vector3D(0.0, 1.0, -6.0));
-    double fovDegrees = 55; // Slightly wider to see more objects
+   /* Cámara */
+   /* **************************** */
+    Matrix4x4 cameraToWorld = Matrix4x4::translate(Vector3D(0.0, -0.25, -3.0));
+    double fovDegrees = 60;
     double fovRadians = Utils::degreesToRadians(fovDegrees);
     cam = new PerspectiveCamera(cameraToWorld, fovRadians, *film);
 
     /* ********* */
-    /* Materials */
+    /* Materiales */
     /* ********* */
-    // Glossy materials for moving objects (creates nice streaks)
-    Material* glossyRed = new Phong(Vector3D(0.9, 0.1, 0.1), Vector3D(0.8, 0.8, 0.8), 80);
-    Material* glossyBlue = new Phong(Vector3D(0.1, 0.2, 0.9), Vector3D(0.8, 0.8, 0.8), 80);
-    Material* glossyYellow = new Phong(Vector3D(0.8, 0.8, 0.1), Vector3D(0.8, 0.8, 0.8), 80);
-    Material* glossyCyan = new Phong(Vector3D(0.1, 0.8, 0.8), Vector3D(0.8, 0.8, 0.8), 80);
+    Material* glossyWhite = new Phong(Vector3D(0.85, 0.85, 0.85), Vector3D(0.9, 0.9, 0.9), 80);
+    Material* glossyRed = new Phong(Vector3D(0.95, 0.10, 0.10), Vector3D(0.9, 0.9, 0.9), 80);
+    Material* glossyBlue = new Phong(Vector3D(0.10, 0.20, 0.95), Vector3D(0.9, 0.9, 0.9), 80);
+    Material* glossyGreen = new Phong(Vector3D(0.10, 0.90, 0.20), Vector3D(0.9, 0.9, 0.9), 80);
+    Material* glossyPurple = new Phong(Vector3D(0.60, 0.20, 0.80), Vector3D(0.9, 0.9, 0.9), 80);
+    Material* glossyYellow = new Phong(Vector3D(0.95, 0.85, 0.10), Vector3D(0.9, 0.9, 0.9), 80);
 
-    // Matte materials for the environment
-    Material* floorMat = new Phong(Vector3D(0.25, 0.25, 0.25), Vector3D(0.1, 0.1, 0.1), 20);
-    Material* wallMat = new Phong(Vector3D(0.6, 0.6, 0.6), Vector3D(0.0, 0.0, 0.0), 10);
-    Material* pillarMat = new Phong(Vector3D(0.4, 0.4, 0.4), Vector3D(0.1, 0.1, 0.1), 20);
-
-    // Strong Light
-    Material* lightMat = new Emissive(Vector3D(35, 35, 35), Vector3D(1.0));
+    // Suelo gris con algo de brillo
+    Material* floorGlossy = new Phong(Vector3D(0.15, 0.15, 0.15), Vector3D(0.6, 0.6, 0.6), 60);
+    // Luz de área en el techo
+    Material* emissive = new Emissive(Vector3D(35, 35, 35), Vector3D(0.0));
 
     /* ******* */
-    /* Objects */
+    /* Objetos */
     /* ******* */
+    double offset = 3.0;
 
-    // --- ENVIRONMENT ---
+    // Solo plano suelo (fondo negro)
+    Shape* bottomPlan = new InfinitePlan(Vector3D(0, -offset, 0), Vector3D(0, 1, 0), floorGlossy);
+    myScene.AddObject(bottomPlan);
 
-    // 1. Floor
-    Shape* floor = new InfinitePlan(Vector3D(0, -2.0, 0), Vector3D(0, 1, 0), floorMat);
-    myScene.AddObject(floor);
+    // Luz de área: rectángulo grande en el techo, mirando hacia abajo
+    double lightY = 8; // altura mayor
+    Shape* square_emissive = new Square(
+        Vector3D(-3.0, lightY, 7),   // esquina (sube en Y)
+        Vector3D(6.0, 0.0, 0.0),       // lado X
+        Vector3D(0.0, 0.0, 6.0),       // lado Z
+        Vector3D(0.0, -1.0, 0.0),      // normal hacia abajo
+        emissive);
+    myScene.AddObject(square_emissive);
 
-    // 2. Back Wall (Static reference, Z = 14)
-    Shape* backWall = new InfinitePlan(Vector3D(0, 0, 14), Vector3D(0, 0, -1), wallMat);
-    myScene.AddObject(backWall);
+    // Definición de bolas (x,z). Se ajustarán para evitar solapes.
+    struct Ball { double r; Vector3D p; Material* m; };
+    std::vector<Ball> balls = {
+        {1.6, Vector3D(-2.20, 0.0, 5.00), glossyBlue},    // azul grande izq
+        {2.2, Vector3D(-0.20, 0.0, 8.40), glossyPurple},  // morada grande fondo izq
+        {0.9, Vector3D(-1.60, 0.0, 5.60), glossyRed},     // roja pequeña
+        {1.2, Vector3D(8.00, 0.0, 6.80), glossyGreen},   // verde dcha
+        {1.4, Vector3D(1.20, 0.0, 7.30), glossyBlue},    // azul media fondo
+        {1.0, Vector3D(2.60, 0.0, 5.40), glossyPurple},  // morada media delantera
+        {1.0, Vector3D(1.50, 0.0, 6.30), glossyWhite},   // blanca central (punto de foco)
+        {3.2, Vector3D(4.20, 0.0, 9.00), glossyRed},     // roja enorme fondo dcha
+        {0.4, Vector3D(3.40, 0.0, 6.20), glossyYellow},  // amarilla pequeña
+    };
 
-    // 3. Ceiling Light (Wide area light to catch highlights)
-    Shape* light = new Square(Vector3D(-5.0, 8.0, 5.0), Vector3D(10.0, 0.0, 0.0), Vector3D(0.0, 0.0, 10.0), Vector3D(0.0, -1.0, 0.0), lightMat);
-    myScene.AddObject(light);
+    // Relajación en planta (x,z) para evitar solapes.
+    // Para esferas sobre el mismo plano, distancia horizontal mínima = 2*sqrt(r1*r2).
+    const double margin = 0.02; // separador mínimo
+    for (int iter = 0; iter < 200; ++iter) {
+        bool moved = false;
+        for (size_t i = 0; i < balls.size(); ++i) {
+            for (size_t j = i + 1; j < balls.size(); ++j) {
+                const double minH = 2.0 * std::sqrt(balls[i].r * balls[j].r) + margin;
+                const double dx = balls[j].p.x - balls[i].p.x;
+                const double dz = balls[j].p.z - balls[i].p.z;
+                const double dist = std::sqrt(dx * dx + dz * dz);
+                if (dist < minH) {
+                    // Empuje proporcional. Las grandes se mueven menos (peso ~ 1/r).
+                    const double push = 0.5 * (minH - dist);
+                    const double nx = (dist > 1e-8) ? dx / dist : 1.0;
+                    const double nz = (dist > 1e-8) ? dz / dist : 0.0;
+                    const double wi = 1.0 / balls[i].r;
+                    const double wj = 1.0 / balls[j].r;
+                    const double wsum = wi + wj;
 
-    // --- OBJECTS AT DIFFERENT DEPTHS ---
+                    balls[i].p.x -= nx * push * (wi / wsum);
+                    balls[i].p.z -= nz * push * (wi / wsum);
+                    balls[j].p.x += nx * push * (wj / wsum);
+                    balls[j].p.z += nz * push * (wj / wsum);
 
-    // ZONE 1: FOREGROUND (Z = -3 to -1) -> EXTREME BLUR
-    // These are very close to the camera.
-    Matrix4x4 tRed = Matrix4x4::translate(Vector3D(-2.5, -0.8, -3.0));
-    Shape* sRed = new Sphere(0.8, tRed, glossyRed);
-    myScene.AddObject(sRed);
+                    moved = true;
+                }
+            }
+        }
+        if (!moved) break;
+    }
 
-    Matrix4x4 tSmallCyan = Matrix4x4::translate(Vector3D(1.5, -1.2, -1.0));
-    Shape* sCyan = new Sphere(0.5, tSmallCyan, glossyCyan);
-    myScene.AddObject(sCyan);
+    // Crear geometría en la escena (centros apoyados en el suelo).
+    for (const auto& b : balls) {
+        Matrix4x4 t = Matrix4x4::translate(Vector3D(b.p.x, -offset + b.r, b.p.z));
+        Shape* s = new Sphere(b.r, t, b.m);
+        myScene.AddObject(s);
+    }
 
-
-    // ZONE 2: MID-GROUND (Z = 3 to 6) -> MEDIUM BLUR
-    // These will show clear motion, but not as extreme as the foreground.
-    Matrix4x4 tYellow = Matrix4x4::translate(Vector3D(0.5, 0.0, 4.0));
-    Shape* sYellow = new Sphere(1.5, tYellow, glossyYellow);
-    myScene.AddObject(sYellow);
-
-
-    // ZONE 3: BACKGROUND (Z = 11 to 14) -> SHARP / STATIC
-    // These are far away against the wall. Parallax is minimal.
-    Matrix4x4 tBlue = Matrix4x4::translate(Vector3D(3.0, 1.5, 12.0));
-    Shape* sBlue = new Sphere(2.5, tBlue, glossyBlue);
-    myScene.AddObject(sBlue);
-
-    // A large "pillar" structure in the back corner to fill space
-    Matrix4x4 tPillar = Matrix4x4::translate(Vector3D(-4.0, 0.0, 13.0));
-    Shape* sPillar = new Sphere(3.0, tPillar, pillarMat);
-    myScene.AddObject(sPillar);
 }
 
 
@@ -492,7 +513,7 @@ int main()
 	// ----------------------- SHADERS -------------------------//
 
     Shader* DOFshader = new AreaDirectDOF(bgColor, 10, 10.21f, 0.5f);
-    Shader* MBshader = new AreaDirectMB(bgColor, 10, 15, cameraVelocity); //Change 5 to 40
+    Shader* MBshader = new AreaDirectMB(bgColor, 260, 40, cameraVelocity); //Change 5 to 40
 
 
     // Build the scene---------------------------------------------------------
